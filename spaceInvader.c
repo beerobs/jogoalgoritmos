@@ -32,7 +32,9 @@ typedef struct Nave{
 typedef struct Heroi{
     Rectangle pos;
     Color color;
+    Bala bala;
     int velocidade;
+    int direcao;
 }Heroi;
 
 typedef struct Bordas{
@@ -60,16 +62,22 @@ void AtualizaJogo(Jogo *j);
 void DesenhaJogo(Jogo *j);
 void AtualizaFrameDesenho(Jogo *j);
 void AtualizaNavePos(Jogo *j);
+void AtualizaHeroiPos(Jogo *j);
 void DesenhaNaves(Jogo *j);
 void DesenhaHeroi(Jogo *j);
 void ColisaoBordas(Jogo *j);
 void DesenhaBordas(Jogo *j);
 int ColisaoBalas(Jogo *j);
+int ColisaoBalasHeroi(Jogo *j);
 void DesenhaBordas(Jogo *j);
 void AtiraBalas(Jogo *j);
+void AtiraBalasHeroi(Jogo *j);
 void CarregaImagens(Jogo *j);
 void DescarregaImagens(Jogo *j);
 void AtualizaNavePos(Jogo *j);
+void DesenhaBalas(Jogo *j);
+void DesenhaBalasHeroi(Jogo *j);
+
 
 
 int main(){
@@ -101,7 +109,12 @@ void IniciaJogo(Jogo *j){
     j->tempoAnimação = GetTime();
 
     j->heroi.pos = (Rectangle) {LARGURA_JANELA/2 - STD_SIZE_X/2, ALTURA_JANELA - STD_SIZE_Y -10, STD_SIZE_X, STD_SIZE_Y};
-    j->heroi.color = BLUE;
+    j->heroi.color = PURPLE;
+    j->heroi.velocidade = 3;
+    j->heroi.bala.ativa = 0;
+    j->heroi.bala.tempo = GetTime();
+    j->heroi.bala.velocidade = 5;
+    j->heroi.bala.tiro = LoadSound("assets/shoot.wav");
 
     j->nave.pos = (Rectangle) {0, 15, STD_SIZE_X, STD_SIZE_Y};
     j->nave.color = RED;
@@ -129,7 +142,9 @@ void IniciaNaves(Jogo *j){
 
 void AtualizaJogo(Jogo *j){
     AtualizaNavePos(j);
+    AtualizaHeroiPos(j);
     AtiraBalas(j);
+    AtiraBalasHeroi(j);
 }
 
 void DesenhaJogo(Jogo *j){
@@ -152,6 +167,14 @@ void AtualizaNavePos(Jogo *j){
         j->nave.pos.x += j->nave.velocidade;
     }else{
         j->nave.pos.x -= j->nave.velocidade;
+    }
+}
+
+void AtualizaHeroiPos(Jogo *j){
+    if(IsKeyDown(KEY_RIGHT) && j->heroi.pos.x < LARGURA_JANELA-STD_SIZE_X - 10){
+        j->heroi.pos.x += j->heroi.velocidade;
+    }else if(IsKeyDown(KEY_LEFT) && j->heroi.pos.x > 10){
+        j->heroi.pos.x -= j->heroi.velocidade;
     }
 }
 
@@ -190,11 +213,6 @@ void DesenhaHeroi(Jogo *j){
 
 }
 
-void AtualizaHeroiPos(Jogo *j){
-    
-}
-
-
 void DesenhaBordas(Jogo *j){
     for(int i = 0; i < 4; i++){
         DrawRectangleRec(j->bordas[i].pos, LIGHTGRAY);
@@ -203,6 +221,10 @@ void DesenhaBordas(Jogo *j){
 
 void DesenhaBalas(Jogo *j){
     DrawRectangleRec(j->nave.bala.pos, YELLOW);
+}
+
+void DesenhaBalasHeroi(Jogo *j){
+    DrawRectangleRec(j->heroi.bala.pos, RED);
 }
 
 void AtiraBalas(Jogo *j){
@@ -222,6 +244,22 @@ void AtiraBalas(Jogo *j){
     }
 }
 
+void AtiraBalasHeroi(Jogo *j){
+    if(j->heroi.bala.ativa == 0 && IsKeyDown(KEY_SPACE)){
+        j->heroi.bala.pos = (Rectangle){j->heroi.pos.x+j->heroi.pos.width/2, j->heroi.pos.y+j->heroi.pos.height/2, 
+        LARGURA_BALA, ALTURA_BALA};
+        j->heroi.bala.ativa = 1;
+        j->heroi.bala.tempo = GetTime();
+        PlaySound(j->heroi.bala.tiro);
+    }
+    else if(ColisaoBalasHeroi(j)){
+        j->heroi.bala.ativa = 0;
+    }
+    if(j->heroi.bala.ativa == 1){
+        j->heroi.bala.pos.y -= j->heroi.bala.velocidade;
+        DesenhaBalasHeroi(j);
+    }
+}
 
 void ColisaoBordas(Jogo *j){
     if(CheckCollisionRecs(j->nave.pos, j->bordas[2].pos)){
@@ -238,6 +276,18 @@ int ColisaoBalas(Jogo *j){
     }
     // Colisao bala com borda de baixo
     if(CheckCollisionRecs(j->nave.bala.pos, j->bordas[1].pos)){
+        return 1;
+    }
+    return 0;
+}
+
+int ColisaoBalasHeroi(Jogo *j){
+    // Colisao bala com nave
+    if(CheckCollisionRecs(j->nave.pos, j->heroi.bala.pos)){
+        return 1;
+    }
+    // Colisao bala com borda de baixo
+    if(CheckCollisionRecs(j->heroi.bala.pos, j->bordas[0].pos)){
         return 1;
     }
     return 0;
