@@ -44,6 +44,7 @@ typedef struct Bordas{
 typedef struct Assets{
     Texture2D naveVerde;
     Texture2D heroiPrata;
+    Texture2D telaFinal;
     Sound tiro;
 }Assets;
 
@@ -78,6 +79,7 @@ void DescarregaImagens(Jogo *j);
 void AtualizaNavePos(Jogo *j);
 void DesenhaBalas(Jogo *j);
 void DesenhaBalasHeroi(Jogo *j);
+int FinalDeJogo(Jogo* j);
 
 
 
@@ -96,10 +98,11 @@ int main(){
     Music musicaJogo = LoadMusicStream("assets/musica.mp3");
     PlayMusicStream(musicaJogo);
 
-    while(!WindowShouldClose()){
+    while(!WindowShouldClose() && !FinalDeJogo(&jogo)){
         UpdateMusicStream(musicaJogo);
         AtualizaFrameDesenho(&jogo);
     }
+
     UnloadMusicStream(musicaJogo);
     DescarregaImagens(&jogo);
     CloseWindow();
@@ -114,7 +117,7 @@ void IniciaJogo(Jogo *j){
     j->heroi.velocidade = 3;
     j->heroi.bala.ativa = 0;
     j->heroi.bala.tempo = GetTime();
-    j->heroi.bala.velocidade = 5;
+    j->heroi.bala.velocidade = 15;
     j->heroi.bala.tiro = LoadSound("assets/shoot.wav");
 
     j->nave.pos = (Rectangle) {0, 15, STD_SIZE_X, STD_SIZE_Y};
@@ -155,6 +158,34 @@ void DesenhaJogo(Jogo *j){
     DesenhaHeroi(j);
     DesenhaBordas(j);
     EndDrawing();
+}
+
+int FinalDeJogo(Jogo* j){
+    if (CheckCollisionRecs(j->nave.pos, j->heroi.bala.pos)) {
+                DesenhaVitoria(j);
+                return 1;
+            }
+    if (CheckCollisionRecs(j->heroi.pos, j->nave.bala.pos)) {
+        DesenhaDerrota(j);
+        return 1;
+    }
+}
+void DesenhaVitoria(Jogo* j){
+    j->assets.telaFinal = LoadTexture("assets/youWin.png");
+        while(IsKeyUp(KEY_ESCAPE && !WindowShouldClose())){
+            BeginDrawing();
+            DrawTexture(j->assets.telaFinal, 0, 0, WHITE);
+            EndDrawing();
+        }
+}
+
+void DesenhaDerrota(Jogo* j){
+    j->assets.telaFinal = LoadTexture("assets/youLose.png");
+        while(IsKeyUp(KEY_ESCAPE && !WindowShouldClose())){
+            BeginDrawing();
+            DrawTexture(j->assets.telaFinal, 0, 0, WHITE);
+            EndDrawing();
+        }
 }
 
 void AtualizaFrameDesenho(Jogo *j){
