@@ -43,6 +43,7 @@ typedef struct Bordas{
 
 typedef struct Assets{
     Texture2D naveVerde;
+    Texture2D heroiPrata;
     Sound tiro;
 }Assets;
 
@@ -180,10 +181,12 @@ void AtualizaHeroiPos(Jogo *j){
 
 void CarregaImagens(Jogo *j){
     j->assets.naveVerde = LoadTexture("assets/GreenAnimation.png");
+    j->assets.heroiPrata = LoadTexture("assets/SilverStatic.png");
 }
 
 void DescarregaImagens(Jogo *j){
     UnloadTexture(j->assets.naveVerde);
+    UnloadTexture(j->assets.heroiPrata);
 }
 
 void DesenhaNaves(Jogo *j){
@@ -209,8 +212,26 @@ void DesenhaNaves(Jogo *j){
 }
 
 void DesenhaHeroi(Jogo *j){
-    DrawRectangle(j->heroi.pos.x, j->heroi.pos.y, j->heroi.pos.width, j->heroi.pos.height, j->heroi.color);
+    Vector2 tamanhoFrame = {32, 32};
+    
+    static Vector2 frame = {0, 0};
+    static float tempoUltimaTroca = 0;
+    
+    if(GetTime() - tempoUltimaTroca >= 1){
+        if(frame.x == 0){
+            frame.x = 1;
+        }else{
+            frame.x = 0;
+        }
 
+        tempoUltimaTroca = GetTime();
+    }
+    Rectangle frameRecNave = {frame.x * tamanhoFrame.x, frame.y*tamanhoFrame.y,
+     tamanhoFrame.x, tamanhoFrame.y};
+    DrawTexturePro(j->assets.naveVerde, frameRecNave, (Rectangle){j->nave.pos.x, j->nave.pos.y, 32, 32},
+    (Vector2){0, 0}, 0.0f, WHITE);
+    
+    DrawTexture(j->assets.heroiPrata, j->heroi.pos.x, j->heroi.pos.y, j->heroi.color);
 }
 
 void DesenhaBordas(Jogo *j){
