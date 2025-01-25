@@ -76,7 +76,6 @@ void AtiraBalas(Jogo *j);
 void AtiraBalasHeroi(Jogo *j);
 void CarregaImagens(Jogo *j);
 void DescarregaImagens(Jogo *j);
-void AtualizaNavePos(Jogo *j);
 void DesenhaBalas(Jogo *j);
 void DesenhaBalasHeroi(Jogo *j);
 int FinalDeJogo(Jogo* j);
@@ -117,7 +116,7 @@ void IniciaJogo(Jogo *j){
     j->heroi.velocidade = 3;
     j->heroi.bala.ativa = 0;
     j->heroi.bala.tempo = GetTime();
-    j->heroi.bala.velocidade = 15;
+    j->heroi.bala.velocidade = 10;
     j->heroi.bala.tiro = LoadSound("assets/shoot.wav");
 
     j->nave.pos = (Rectangle) {0, 15, STD_SIZE_X, STD_SIZE_Y};
@@ -171,7 +170,7 @@ int FinalDeJogo(Jogo* j){
     }
 }
 void DesenhaVitoria(Jogo* j){
-    j->assets.telaFinal = LoadTexture("assets/youWin.png");
+    j->assets.telaFinal = LoadTexture("assets/YouWin.png");
         while(IsKeyUp(KEY_ESCAPE && !WindowShouldClose())){
             BeginDrawing();
             DrawTexture(j->assets.telaFinal, 0, 0, WHITE);
@@ -180,7 +179,7 @@ void DesenhaVitoria(Jogo* j){
 }
 
 void DesenhaDerrota(Jogo* j){
-    j->assets.telaFinal = LoadTexture("assets/youLose.png");
+    j->assets.telaFinal = LoadTexture("assets/YouLose.png");
         while(IsKeyUp(KEY_ESCAPE && !WindowShouldClose())){
             BeginDrawing();
             DrawTexture(j->assets.telaFinal, 0, 0, WHITE);
@@ -270,6 +269,7 @@ void AtiraBalas(Jogo *j){
     }
     else if(ColisaoBalas(j)){
         j->nave.bala.ativa = 0;
+        j->nave.bala.pos = (Rectangle){0, 0};
     }
     if(j->nave.bala.ativa == 1){
         j->nave.bala.pos.y += j->nave.bala.velocidade;
@@ -287,6 +287,7 @@ void AtiraBalasHeroi(Jogo *j){
     }
     else if(ColisaoBalasHeroi(j)){
         j->heroi.bala.ativa = 0;
+        j->heroi.bala.pos = (Rectangle){0, 0};
     }
     if(j->heroi.bala.ativa == 1){
         j->heroi.bala.pos.y -= j->heroi.bala.velocidade;
